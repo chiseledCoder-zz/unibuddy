@@ -6,11 +6,11 @@ from typing import Dict, List
 
 # Create your views here.
 
-query = "is your problems"
+query = ""
 k = 3
 
 
-def search_for_summaries(query, k):
+def search_for_summaries(query=query, k=k):
     """ Reads json and return best k number of the most relevant summaries of the books.
     The query is converted to list of keywords. Every summary is iterated and it is split in to keywords.
     Another iterator is to run for len(summary) - len(query) to handle IndexError.
@@ -34,23 +34,28 @@ def search_for_summaries(query, k):
     either perfect or partial matching. and ranking each list would be easier.
 
 
-    More better and robust approach to search of items could be to use TF-IDF,
+    More better and robust approach to search of items could be to use TF-IDF, because it'll return relevance to more unique keywords than common keywords.
     I tried to implement this first by forming a dict of every keyword in all summaries as keys and their occurrences as it's values.
     Then checking the occurrences of keywords from the query in each list and then ranking it based on it's % matching.
 
     The task became more complex when time came to identify non letters which are attached to the word it self. For eg. "students," is one word in listA.
     so our query consists of "students" and while checking through listA for it's relevance we won't get perfect match as list contains "student,".
 
+
     """
     with open('utils/data.json') as book_data:
         data = book_data.read()
     summaries = json.loads(data)['summaries']
-    if len(query) == 0:  # if query is empty then return the summaries without searching.
-            return summaries
 
-    # if k is less than 0 we set k to 0
-    if k is None or k <= 0:
+    if k is None or k <= 0:  # if k is less than 0 we set k to 0
         k = 0
+
+    if len(query) == 0:  # if query is empty then return the summaries without searching.
+        if k == 0:  # if k is 0 we do not slice the return
+            return json.dumps(summaries)
+        else:
+            return json.dumps(summaries[:k])
+
     query = query.lower()  # we lower the string to to make query search case-insensitive.
     query_length = len(query.split(" "))  # we get list of kw from the query.
     temp = dict()  # dict to store the relevant summary and it's related information.
@@ -96,13 +101,23 @@ def search_for_summaries(query, k):
     return json.dumps(data)
 
 
-queries = ['is your problem', 'achieve take book']
+queries = []
 k = 3
 
 
-def book_search(request, query=queries, k=k):
-    if not query:
-        return None
+def book_search(request, query, k):
+    """To find books we """
+    books = list()
+    BOOK_SEARCH_URL = "https://ie4djxzt8j.execute-api.eu-west-1.amazonaws.com/coding"
+    if not query:  # we query list is empty we append empty string to it.
+        query = ['']
     for item in query:
-        print(search_for_summaries(item, k))
-    return JsonResponse({"message": "GIT"})
+        summaries = json.loads(search_for_summaries(item, k))  # we load data from search_for_summaries
+        book = list()  # we a initialize list to store each book's summary, id and author
+        for summary in summaries:  # we iterate over each summary received
+            req = requests.post(BOOK_SEARCH_URL, json={'book_id': summary['id']})
+            summary['author'] = req.json()['author']  # here we append author and query data to each book data.
+            summary['query'] = item
+            book.append(summary)  # we append each book's data to book list
+        books.append(book)  # we append all books grouped by query to books list
+    return json.dumps(books)
