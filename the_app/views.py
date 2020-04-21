@@ -10,10 +10,9 @@ query = ""
 k = 3
 
 
-def search_for_summaries(query=query, k=k):
-    """ Reads json and return best k number of the most relevant summaries of the books.
+def search_for_summaries(query, k):
+    """This function reads json and return best k number of the most relevant summaries of the books.
     The query is converted to list of keywords. Every summary is iterated and it is split in to keywords.
-    Another iterator is to run for len(summary) - len(query) to handle IndexError.
     Using sliding window technique we count the occurrences for partial match of query in the window of summary.
     Summary is ranked using percentage number of occurrences to the total number of kws present in the summary.
     Relevant summaries are returned using reverse sort on the rank and slicing to the k elements.
@@ -71,15 +70,12 @@ def search_for_summaries(query=query, k=k):
         # we check for length of summary or query whichever is longer to avoid IndexError.
         if query_length > summary_length:
             window_range = query_length - summary_length + 1
-            temp_store = words
-            words = query
-            query = temp_store
         elif query_length == summary_length:
             window_range = query_length
         else:
             window_range = summary_length - query_length + 1
 
-        for i in range(window_range):  # we iterate from 0 to
+        for i in range(window_range):  # we iterate from 0 to len(summary length)
             if query in " ".join(words[i: i + query_length]):  # partial matching in the window size of len(query)
                 count += 1  # if a match is found we increment the count
 
@@ -105,7 +101,7 @@ queries = []
 k = 3
 
 
-def book_search(request, query, k):
+def book_search(query, k):
     """To find books we """
     books = list()
     BOOK_SEARCH_URL = "https://ie4djxzt8j.execute-api.eu-west-1.amazonaws.com/coding"

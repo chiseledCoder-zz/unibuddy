@@ -16,7 +16,7 @@ class SearchEngineTesting(TestCase):
         """search_for_summaries Function should return entire list of summaries if query string is empty."""
         query = ""
         k = 2
-        self.assertEqual(search_for_summaries(query, k), json.dump(summaries))
+        self.assertEqual(search_for_summaries(query, k), json.dumps(summaries[:k]))
 
     def query_longer_than_summary(self):
         """search_for_summaries function should return relevant summaries"""
