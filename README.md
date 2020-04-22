@@ -25,3 +25,10 @@ to make the entire local application available to anywhere in the world, then
 install [ngrok](https://ngrok.com/)
 after installation run `ngrok http 8000`
 ngrok will provide a url which can be shared with anyone.
+
+
+#### Future Implementations:
+- Correction of typos in query using [pyspellchecker](https://pypi.org/project/pyspellchecker/).
+- Avoid redundancy of summary.
+- Improved search algorithm for only unique words.
+ 
